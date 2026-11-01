@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Maze Generator and Solver</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Maze Generator & Solver</h1>
+        <p>MCA Mini Project | Design and Analysis of Algorithms</p>
+    </header>
+
+    <div class="container">
+
+        <aside class="controls">
+
+            <h2>Maze Configuration</h2>
+
+            <label>Grid Size</label>
+
+            <select id="mazeSize">
+                <option value="15">Small (15x15)</option>
+                <option value="27" selected>Medium (27x27)</option>
+                <option value="41">Large (41x41)</option>
+            </select>
+
+            <label>Maze Topology</label>
+
+            <select id="topology">
+                <option value="braid">Braid</option>
+                <option value="perfect">Perfect</option>
+            </select>
+
+            <button id="generateBtn">Generate New Maze</button>
+
+            <hr>
+
+            <h2>Algorithm Selection</h2>
+
+            <label>
+                <input type="radio" name="algorithm" value="BFS" checked>
+                Breadth First Search
+            </label>
+
+            <label>
+                <input type="radio" name="algorithm" value="DFS">
+                Depth First Search
+            </label>
+
+            <label>
+                <input type="radio" name="algorithm" value="Dijkstra">
+                Dijkstra Algorithm
+            </label>
+
+            <label>
+                <input type="radio" name="algorithm" value="A*">
+                A* Search
+            </label>
+
+            <label>Animation Speed</label>
+
+            <input type="range" id="speed"
+                   min="1" max="40" value="20">
+
+            <hr>
+
+            <h2>Actions</h2>
+
+            <button id="solveBtn">Solve Maze</button>
+
+            <button id="raceBtn">4-Way Algorithm Race</button>
+
+            <button id="benchmarkBtn">Instant Benchmark</button>
+
+            <button id="clearBtn">Clear Path</button>
+
+            <button id="resetBtn">Reset Maze</button>
+
+        </aside>
+
+        <main class="maze-section">
+
+            <h2>Maze Visualization</h2>
+
+            <div class="legend">
+                <span>🟢 Start</span>
+                <span>🔴 Goal</span>
+                <span>⬛ Wall</span>
+                <span>🟦 Visited</span>
+                <span>🟨 Path</span>
+            </div>
+
+            <canvas id="mazeCanvas"></canvas>
+
+            <p id="status">Status: Ready</p>
+
+        </main>
+
+        <aside class="metrics">
+
+            <h2>Live Search Metrics</h2>
+
+            <p>Algorithm: <b id="metricAlgo">BFS</b></p>
+
+            <p>Status: <b id="metricStatus">Ready</b></p>
+
+            <p>Execution Time:
+                <b id="metricTime">0 ms</b>
+            </p>
+
+            <p>Nodes Visited:
+                <b id="metricVisited">0</b>
+            </p>
+
+            <p>Path Length:
+                <b id="metricPath">0</b>
+            </p>
+
+            <hr>
+
+            <h2>Algorithm Information</h2>
+
+            <p id="algorithmInfo">
+                BFS explores the maze level by level using a queue.
+            </p>
+
+        </aside>
+
+    </div>
+
+    <section class="performance">
+
+        <h2>Performance Analysis</h2>
+
+        <div id="benchmarkResults">
+            Run benchmark to see results.
+        </div>
+
+    </section>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
