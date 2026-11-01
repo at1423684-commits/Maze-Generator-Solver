@@ -1,158 +1,198 @@
-# 🏁 Maze Generator and Solver with Algorithm Race
+# 🧩 Maze Generator and Solver with Algorithm Race
 
-A comprehensive desktop application developed using **Python 3**, **Tkinter**, **Matplotlib**, and **NumPy**. Designed specifically for MCA (Master of Computer Applications) academic coursework, demonstrating core paradigms from **Python Programming** and **Design and Analysis of Algorithms (DAA)**.
+A Python-based desktop application that generates random mazes, solves them using different graph algorithms, and compares their performance through visualisation and an algorithm race.
 
-![Maze Visual Comparison](assets/maze_solution_comparison.png)
+This project demonstrates important concepts from **Design and Analysis of Algorithms (DAA)**, including graph traversal, stacks, queues, shortest-path algorithms, and time and space complexity.
 
----
+## 📌 Project Overview
 
-## 🌟 Key Features
+The Maze Generator and Solver allows users to generate different types of mazes and find paths from a starting point to a destination using three algorithms:
 
-1. **Random Maze Generation (Recursive Backtracking / DFS)**:
-   - Generates spanning-tree perfect mazes with zero cycles.
-   - Braid maze mode introduces loops to highlight differences in algorithm path optimality.
-   - Multiple preset sizes: **Small (15x15)**, **Medium (27x27)**, **Large (41x41)**.
-   - Color-coded grid: Start (Emerald Green `S`), Destination (Crimson Red `G`), Walls (Slate Navy), and Passages (Off-White).
+1. **Breadth-First Search (BFS)**
+2. **Depth-First Search (DFS)**
+3. **Dijkstra's Algorithm**
 
-2. **Four Search Algorithms**:
-   - **Breadth-First Search (BFS)**: Uninformed search using a FIFO Queue (`collections.deque`). Guarantees the shortest path on unweighted grids.
-   - **Depth-First Search (DFS)**: Uninformed search using a LIFO Stack (`list`). Explores deep branches; non-optimal pathfinder.
-   - **Dijkstra's Algorithm**: Greedy search using a Min-Heap Priority Queue (`heapq`). Guarantees minimum cost/shortest path.
-   - **A\* Search Algorithm**: Informed heuristic search using a Min-Heap Priority Queue with Manhattan Distance heuristic $h(n) = |x_1 - x_2| + |y_1 - y_2|$. Significantly reduces nodes explored while preserving 100% path optimality.
+The application also provides an algorithm race where all three algorithms solve the same maze, making it easier to compare their performance.
 
-3. **⚡ 4-Way Synchronized Live Algorithm Race Arena**:
-   - Dedicated multi-grid window displaying 4 synchronized mini-canvases in a 2x2 grid.
-   - Watch all 4 algorithms race simultaneously in real time on the identical maze topology.
-   - Automatically ranks finishing order and crowns the winner with execution time and nodes visited metrics.
+## ✨ Features
 
-4. **Interactive Step-by-Step Visualization**:
-   - High-performance Tkinter canvas with 2D item-ID caching (zero redraw lag, smooth 60 FPS animation).
-   - Speed control slider (from fine single-step stepping to fast batch simulation).
-   - Live metrics display: execution time in milliseconds, nodes visited count, path length, and frontier memory footprint.
+- **Maze Generation:** Generates random mazes using the Recursive Backtracking algorithm.
+- **Perfect Maze:** Creates a maze with a unique path between connected points.
+- **Braid Maze:** Adds extra passages to create loops and alternative routes.
+- **Multiple Maze Sizes:** Choose between Small, Medium, and Large maze presets.
+- **Three Solving Algorithms:** Compare BFS, DFS, and Dijkstra.
+- **Algorithm Race:** Run all three algorithms on the same maze.
+- **Visualisation:** Watch how algorithms explore the maze and find a solution.
+- **Animation Controls:** Adjust the solving animation speed.
+- **Performance Metrics:** Compare execution time, visited nodes, and path length.
+- **Performance Charts:** Visualise algorithm results using Matplotlib.
 
-5. **📊 Matplotlib Comparative Performance Analysis**:
-   - Embedded 3-panel bar charts comparing:
-     - **Execution Time (ms)**
-     - **Nodes Visited / Explored**
-     - **Solution Path Length (steps)**
-   - Theoretical DAA Complexity Matrix table (Worst-Case Time, Best-Case Time, Space Complexity, Data Structures).
-   - Analytical academic report generation.
+## 🧠 Algorithms Used
 
----
+### 1. Maze Generation: Recursive Backtracking (DFS)
 
-## 🏗️ Project Architecture
+Recursive Backtracking is used to generate the maze. It explores unvisited neighbouring cells and creates passages between them. When it reaches a dead end, it backtracks to explore another possible direction.
 
-```
+### 2. Breadth-First Search (BFS)
+
+BFS explores the maze level by level using a queue. It finds the shortest path in an unweighted maze where every movement has the same cost.
+
+### 3. Depth-First Search (DFS)
+
+DFS explores one direction as deeply as possible before backtracking. It uses a stack to manage the search process. It can find a path, but the path is not always the shortest.
+
+### 4. Dijkstra's Algorithm
+
+Dijkstra's algorithm finds the shortest path by exploring the node with the smallest known distance first. It uses a priority queue (min-heap) to select the next node.
+
+Dijkstra is included as an additional shortest-path algorithm to extend the graph algorithm comparison.
+
+## 📊 Algorithm Complexity
+
+Let:
+- **V** = Number of vertices (cells)
+- **E** = Number of edges (connections between cells)
+
+| Algorithm | Time Complexity | Space Complexity | Data Structure |
+|---|---|---|---|
+| BFS | O(V + E) | O(V) | Queue |
+| DFS | O(V + E) | O(V) | Stack |
+| Dijkstra | O((V + E) log V) | O(V) | Priority Queue |
+
+*Note: These are standard complexity bounds for graph representations using adjacency lists and a binary heap for Dijkstra. Actual execution time depends on maze size, implementation, and system performance.*
+
+## 🖥️ Technologies Used
+
+- **Python:** Main programming language.
+- **Tkinter:** Used to create the graphical user interface.
+- **Matplotlib:** Used to display performance comparison charts.
+- **NumPy:** Used for numerical and array-related operations.
+- **heapq:** Used to implement the priority queue in Dijkstra's algorithm.
+- **collections.deque:** Used to implement the BFS queue.
+
+## 📁 Project Structure
+
+```text
 Maze_Generator_Solver/
 │
-├── main.py                 # Primary Tkinter GUI application & event coordinator
-├── maze_generator.py       # Recursive backtracking DFS maze generator & grid model
-├── algorithms.py           # BFS, DFS, Dijkstra, and A* solvers & step-generators
-├── visualization.py        # Tkinter Canvas rendering & high-speed cell recoloring
-├── algorithm_race.py       # Headless benchmark engine & 4-way visual race arena
-├── performance.py          # Embedded Matplotlib charts & DAA complexity tables
-├── requirements.txt        # Python package dependencies
-├── README.md               # User manual & quickstart guide
-├── PROJECT_REPORT.md       # Complete 22-section MCA college project report & Viva Q&A
+├── main.py
+├── maze_generator.py
+├── algorithms.py
+├── visualization.py
+├── algorithm_race.py
+├── performance.py
+├── requirements.txt
+├── README.md
+├── PROJECT_REPORT.md
 │
-├── assets/                 # Charts, visualizations, and icons
-│   ├── benchmark_comparison.png
-│   └── maze_solution_comparison.png
-│
-├── test_maze_suite.py      # Automated unit tests for algorithms and invariants
-├── test_gui_smoke.py       # Automated GUI smoke tests & simulation integrity
-└── generate_assets.py      # Script to generate sample report assets
+└── assets/
+    ├── benchmark_comparison.png
+    └── maze_solution_comparison.png
 ```
 
----
+*This is the expected structure. Keep only the files and folders that are actually present in your project.*
 
-## 💻 System Requirements
+## ⚙️ Installation and Setup
 
-- **Operating System**: Windows 10 / 11, Linux, or macOS
-- **Python**: Python 3.8 to Python 3.15+
-- **Python Libraries**:
-  - `tkinter` (included with standard Python on Windows/macOS)
-  - `numpy >= 1.20.0`
-  - `matplotlib >= 3.5.0`
+### Prerequisites
 
----
+- Python 3.8 or above
+- pip (Python package installer)
 
-## 🚀 Installation & Execution
+### Step 1: Clone the Repository
 
-### 1. Clone or Open Project Directory
-Open PowerShell or your terminal in the project directory:
-```powershell
-cd "c:\Users\HP\Downloads\anti projects\Maze_Generator_Solver"
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
 ```
 
-### 2. Install Required Dependencies
-```powershell
+### Step 2: Open the Project Folder
+
+```bash
+cd Maze_Generator_Solver
+```
+
+### Step 3: Install Required Libraries
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Launch the Application
-```powershell
+### Step 4: Run the Application
+
+```bash
 python main.py
 ```
 
-### 4. Run Automated Test Suites
-To verify algorithm correctness, path optimality invariants, and GUI stability:
-```powershell
-python test_maze_suite.py
-python test_gui_smoke.py
-```
+The application window should open, allowing you to generate and solve mazes.
 
----
+## 🚀 How to Use
 
-## 🎮 How to Use the Application
+1. Run the application using `python main.py`.
+2. Select a maze size.
+3. Choose the maze type: Perfect Maze or Braid Maze.
+4. Generate a new maze.
+5. Select BFS, DFS, or Dijkstra to solve the maze.
+6. Watch the algorithm explore the maze and find a path.
+7. Use the Algorithm Race feature to compare all three algorithms.
+8. Observe the performance metrics and comparison charts.
 
-1. **Generate a Maze**:
-   - Select a grid size (`Small`, `Medium`, or `Large`).
-   - Select topology: `Braid (Loops / Multi-Path)` or `Perfect (Tree / Single Path)`.
-   - Click **"✨ Generate New Maze"**.
+## 📈 Performance Comparison
 
-2. **Solve with Step-by-Step Animation**:
-   - Choose an algorithm (BFS, DFS, Dijkstra, or A* Search) via the radio buttons.
-   - Adjust the **Animation Speed** slider.
-   - Click **"▶ Solve Maze (Animated)"**.
-   - Observe the frontier expanding (Amber), visited nodes (Sky Blue), and final path (Radiant Gold).
+The application compares the algorithms using three main parameters:
 
-3. **Launch the 4-Way Live Race Arena**:
-   - Click **"⚡ 4-Way Live Race Arena"**.
-   - In the pop-up window, click **"▶ Start Live Race"**.
-   - Watch all four algorithms navigate the same maze simultaneously!
-   - Receive the winner announcement with execution time and nodes visited.
+| Parameter | Description |
+|---|---|
+| Execution Time | Time taken by the algorithm to find a path. |
+| Nodes Visited | Number of maze cells explored during the search. |
+| Path Length | Number of steps in the final path. |
 
-4. **Instant Benchmark & Performance Charts**:
-   - Click **"📊 Instant Benchmark Race"** or solve any maze.
-   - View the bottom notebook tabs:
-     - **Tab 1: 📊 Performance Charts** (embedded Matplotlib bar charts).
-     - **Tab 2: 📑 DAA Complexity Matrix** (Big-O analysis and data structures).
-     - **Tab 3: 📋 Analytical Report** (academic findings and optimality breakdown).
+The results help us understand how different algorithms behave when solving the same maze.
 
----
+The fastest algorithm may vary depending on the maze structure and size. BFS and Dijkstra find shortest paths in an unweighted maze, while DFS may find a longer path.
 
-## 📈 DAA Complexity Comparison Summary
+## 📚 DAA Concepts Covered
 
-| Algorithm | Worst-Case Time | Best-Case Time | Space Complexity | Data Structure | Optimality |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Breadth-First Search (BFS)** | $O(V + E)$ | $O(1)$ | $O(V)$ | Queue (`deque`, FIFO) | **Optimal** |
-| **Depth-First Search (DFS)** | $O(V + E)$ | $O(d)$ | $O(V)$ | Stack (`list`, LIFO) | **Non-Optimal** |
-| **Dijkstra's Algorithm** | $O((V + E) \log V)$ | $O((V + E) \log V)$ | $O(V)$ | Min-Heap (`heapq`) | **Optimal** |
-| **A\* Search Algorithm** | $O((V + E) \log V)$ | $O(d)$ | $O(V)$ | Min-Heap ($f = g + h$) | **Optimal** |
+This project connects practical implementation with several DAA concepts:
 
-*Note: In an unweighted maze, vertices $V$ are passage cells, and edges $E$ are valid 4-directional transitions.*
+- Graph representation and traversal.
+- Breadth-First Search and Depth-First Search.
+- Queue and stack data structures.
+- Priority queue and min-heap.
+- Shortest-path algorithms.
+- Recursive problem-solving.
+- Time and space complexity.
+- Big-O analysis.
+- Performance comparison of algorithms.
 
----
+## 🎯 Learning Outcomes
 
-## 🎓 Academic Presentation Tips
+Through this project, I learned how to:
 
-For your college presentation or viva examination:
-1. Explain **why DFS finds long paths on braid mazes**: DFS dives deep along the first branch it picks and only backtracks upon hitting dead ends.
-2. Explain **why A\* visits fewer cells than BFS**: BFS expands uniformly in all directions (circular wave), whereas A\* uses the Manhattan distance heuristic $h(n)$ to steer the search cone toward the red destination marker.
-3. Show the **4-Way Live Race Arena**: It provides an unforgettable visual proof of theoretical DAA principles in action!
+- Understand maze generation using recursive backtracking.
+- Apply BFS and DFS to graph traversal problems.
+- Implement Dijkstra's shortest-path algorithm.
+- Use queues, stacks, and priority queues.
+- Analyse time and space complexity.
+- Compare algorithms through practical experiments.
+- Create a graphical application using Python and Tkinter.
+- Present algorithm performance through visualisation and charts.
 
----
+## 🔮 Future Scope
 
-## 📜 License & Acknowledgements
-Developed for academic mini-project submission in MCA Degree Program. Released under the MIT License.
+The project can be improved further by adding:
+
+- More maze generation techniques.
+- Weighted mazes with different movement costs.
+- Additional pathfinding algorithms.
+- Exporting performance results.
+- More visualisation and customisation options.
+
+## 👨‍💻 Author
+
+Aman Thakur 
+MCA (AI/ML)
+26MCI10276
+
+## 📄 License
+
+This project was developed for academic and learning purposes as part of the MCA curriculum.
