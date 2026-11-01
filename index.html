@@ -1,150 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Maze Generator and Solver</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d1b">
+  <meta name="description" content="Interactive Maze Generator and Pathfinding Visualizer using BFS, DFS and Dijkstra algorithms.">
+  <title>MazeLab — Algorithm Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-
 <body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
 
-    <header>
-        <h1>Maze Generator & Solver</h1>
-        <p>MCA Mini Project | Design and Analysis of Algorithms</p>
-    </header>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">M</span>
+      <span>Maze<span class="brand-light">Lab</span></span>
+    </a>
+    <nav class="top-nav">
+      <a class="active" href="#workspace">Visualizer</a>
+      <a href="#algorithms">Algorithms</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="live-status"><span class="status-dot"></span> LIVE SIMULATION</div>
+  </header>
 
-    <div class="container">
-
-        <aside class="controls">
-
-            <h2>Maze Configuration</h2>
-
-            <label>Grid Size</label>
-
-            <select id="mazeSize">
-                <option value="15">Small (15x15)</option>
-                <option value="27" selected>Medium (27x27)</option>
-                <option value="41">Large (41x41)</option>
-            </select>
-
-            <label>Maze Topology</label>
-
-            <select id="topology">
-                <option value="braid">Braid</option>
-                <option value="perfect">Perfect</option>
-            </select>
-
-            <button id="generateBtn">Generate New Maze</button>
-
-            <hr>
-
-            <h2>Algorithm Selection</h2>
-
-            <label>
-                <input type="radio" name="algorithm" value="BFS" checked>
-                Breadth First Search
-            </label>
-
-            <label>
-                <input type="radio" name="algorithm" value="DFS">
-                Depth First Search
-            </label>
-
-            <label>
-                <input type="radio" name="algorithm" value="Dijkstra">
-                Dijkstra Algorithm
-            </label>
-
-            <label>
-                <input type="radio" name="algorithm" value="A*">
-                A* Search
-            </label>
-
-            <label>Animation Speed</label>
-
-            <input type="range" id="speed"
-                   min="1" max="40" value="20">
-
-            <hr>
-
-            <h2>Actions</h2>
-
-            <button id="solveBtn">Solve Maze</button>
-
-            <button id="raceBtn">4-Way Algorithm Race</button>
-
-            <button id="benchmarkBtn">Instant Benchmark</button>
-
-            <button id="clearBtn">Clear Path</button>
-
-            <button id="resetBtn">Reset Maze</button>
-
-        </aside>
-
-        <main class="maze-section">
-
-            <h2>Maze Visualization</h2>
-
-            <div class="legend">
-                <span>🟢 Start</span>
-                <span>🔴 Goal</span>
-                <span>⬛ Wall</span>
-                <span>🟦 Visited</span>
-                <span>🟨 Path</span>
-            </div>
-
-            <canvas id="mazeCanvas"></canvas>
-
-            <p id="status">Status: Ready</p>
-
-        </main>
-
-        <aside class="metrics">
-
-            <h2>Live Search Metrics</h2>
-
-            <p>Algorithm: <b id="metricAlgo">BFS</b></p>
-
-            <p>Status: <b id="metricStatus">Ready</b></p>
-
-            <p>Execution Time:
-                <b id="metricTime">0 ms</b>
-            </p>
-
-            <p>Nodes Visited:
-                <b id="metricVisited">0</b>
-            </p>
-
-            <p>Path Length:
-                <b id="metricPath">0</b>
-            </p>
-
-            <hr>
-
-            <h2>Algorithm Information</h2>
-
-            <p id="algorithmInfo">
-                BFS explores the maze level by level using a queue.
-            </p>
-
-        </aside>
-
-    </div>
-
-    <section class="performance">
-
-        <h2>Performance Analysis</h2>
-
-        <div id="benchmarkResults">
-            Run benchmark to see results.
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span></span> INTERACTIVE ALGORITHM PLAYGROUND</div>
+        <h1>Find your way<br>through the <span>maze.</span></h1>
+        <p>Generate a maze. Choose an algorithm. Watch computer science come to life, one cell at a time.</p>
+        <a class="hero-link" href="#workspace">Explore the visualizer <span>↓</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-grid">
+          <span>01</span><span>10</span><span>11</span><span>01</span><span>00</span>
+          <span>11</span><span class="art-lit">S</span><span class="art-lit"></span><span></span><span>10</span>
+          <span>00</span><span></span><span class="art-lit"></span><span></span><span>01</span>
+          <span>10</span><span></span><span class="art-lit"></span><span class="art-lit"></span><span>11</span>
+          <span>01</span><span>00</span><span>10</span><span></span><span class="art-goal">G</span>
         </div>
-
+        <div class="art-caption">PATHFINDING / 001</div>
+      </div>
     </section>
 
-    <script src="script.js"></script>
+    <section class="workspace section" id="workspace">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">THE WORKSPACE</div>
+          <h2>Maze visualizer</h2>
+        </div>
+        <div class="workspace-tag"><span class="status-dot"></span> READY TO RUN</div>
+      </div>
 
+      <div class="app-layout">
+        <aside class="control-panel panel">
+          <div class="panel-heading">
+            <div class="panel-icon">⌘</div>
+            <div><h3>Controls</h3><p>Configure your simulation</p></div>
+          </div>
+
+          <div class="control-group">
+            <label for="mazeSize">MAZE SIZE <strong id="sizeValue">21 × 21</strong></label>
+            <input id="mazeSize" type="range" min="11" max="41" step="2" value="21">
+            <div class="range-labels"><span>Small</span><span>Large</span></div>
+          </div>
+
+          <div class="control-group">
+            <label for="speed">ANIMATION SPEED <strong id="speedValue">Normal</strong></label>
+            <input id="speed" type="range" min="1" max="5" value="3">
+            <div class="range-labels"><span>Slow</span><span>Fast</span></div>
+          </div>
+
+          <div class="control-group">
+            <label for="algorithm">PATHFINDING ALGORITHM</label>
+            <select id="algorithm">
+              <option value="bfs">Breadth First Search (BFS)</option>
+              <option value="dfs">Depth First Search (DFS)</option>
+              <option value="dijkstra">Dijkstra's Algorithm</option>
+            </select>
+          </div>
+
+          <div class="control-divider"></div>
+
+          <button class="btn btn-primary" id="generateBtn"><span>✦</span> Generate new maze</button>
+          <button class="btn btn-run" id="solveBtn"><span>▶</span> Start visualization</button>
+          <button class="btn btn-secondary" id="clearBtn"><span>↺</span> Clear path</button>
+
+          <div class="hint-box">
+            <span class="hint-icon">ⓘ</span>
+            <p>Generate a maze first, then select an algorithm and start the visualization.</p>
+          </div>
+        </aside>
+
+        <section class="maze-panel panel">
+          <div class="maze-toolbar">
+            <div>
+              <h3>Maze canvas</h3>
+              <p id="mazeStatus">Your maze is ready to be generated.</p>
+            </div>
+            <div class="canvas-label">GRID / <span id="gridLabel">21 × 21</span></div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="mazeCanvas" width="630" height="630"></canvas>
+            <div class="canvas-overlay" id="canvasOverlay">
+              <div class="overlay-icon">⌁</div>
+              <strong>Ready to explore?</strong>
+              <span>Generate a maze to begin</span>
+              <button id="overlayGenerate">Generate maze</button>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i class="legend-box start"></i> Start</span>
+            <span><i class="legend-box goal"></i> Goal</span>
+            <span><i class="legend-box wall"></i> Wall</span>
+            <span><i class="legend-box visited"></i> Visited</span>
+            <span><i class="legend-box path"></i> Final path</span>
+          </div>
+        </section>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card panel">
+          <span class="stat-label">NODES VISITED</span>
+          <strong id="visitedCount">0</strong>
+          <span class="stat-foot">Explored cells</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">PATH LENGTH</span>
+          <strong id="pathLength">0</strong>
+          <span class="stat-foot">Cells in final path</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">EXECUTION TIME</span>
+          <strong id="executionTime">0 <small>ms</small></strong>
+          <span class="stat-foot">Algorithm runtime</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">SIMULATION STATUS</span>
+          <strong class="status-text" id="simulationStatus">Idle</strong>
+          <span class="stat-foot">Current activity</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section algorithms-section" id="algorithms">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">UNDER THE HOOD</div>
+          <h2>Meet the algorithms</h2>
+        </div>
+        <p class="section-description">Three approaches. One destination.<br>Different ways to find the path.</p>
+      </div>
+
+      <div class="algorithm-cards">
+        <article class="algorithm-card panel">
+          <div class="algorithm-number">01 / UNWEIGHTED</div>
+          <div class="algorithm-symbol">↔</div>
+          <h3>Breadth First Search</h3>
+          <p>Explores neighboring cells level by level. Finds the shortest path in an unweighted maze.</p>
+          <div class="complexity"><span>TIME COMPLEXITY</span><strong>O(V + E)</strong></div>
+        </article>
+        <article class="algorithm-card panel">
+          <div class="algorithm-number">02 / DEPTH-BASED</div>
+          <div class="algorithm-symbol">⌁</div>
+          <h3>Depth First Search</h3>
+          <p>Moves as deep as possible before backtracking. Useful for exploring maze routes.</p>
+          <div class="complexity"><span>TIME COMPLEXITY</span><strong>O(V + E)</strong></div>
+        </article>
+        <article class="algorithm-card panel">
+          <div class="algorithm-number">03 / WEIGHTED</div>
+          <div class="algorithm-symbol">◎</div>
+          <h3>Dijkstra's Algorithm</h3>
+          <p>Finds the shortest path by expanding the cell with the lowest known distance.</p>
+          <div class="complexity"><span>TIME COMPLEXITY</span><strong>O((V + E) log V)*</strong></div>
+        </article>
+      </div>
+      <p class="complexity-note">*Typical priority-queue implementation. This visualizer uses a simple array-based priority selection.</p>
+    </section>
+
+    <section class="section about-section" id="about">
+      <div class="about-card panel">
+        <div>
+          <div class="eyebrow">ABOUT THIS PROJECT</div>
+          <h2>Algorithms you can actually see.</h2>
+          <p>MazeLab is an interactive educational project that demonstrates maze generation and pathfinding. It helps learners understand how search algorithms explore a problem space and discover a route from start to finish.</p>
+        </div>
+        <div class="about-meta">
+          <div><span>PROJECT</span><strong>Maze Generator & Solver</strong></div>
+          <div><span>TECHNOLOGIES</span><strong>HTML · CSS · JavaScript</strong></div>
+          <div><span>ALGORITHMS</span><strong>BFS · DFS · Dijkstra</strong></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="#"><span class="brand-icon">M</span><span>Maze<span class="brand-light">Lab</span></span></a>
+    <span>Built to make algorithms visible.</span>
+    <span>MAZE GENERATOR / 2026</span>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
