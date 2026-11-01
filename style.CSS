@@ -1,0 +1,135 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    color: #17243b;
+}
+
+header {
+    background: #111d33;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+header h1 {
+    margin-bottom: 8px;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 240px 1fr 250px;
+    gap: 15px;
+    padding: 20px;
+}
+
+.controls,
+.maze-section,
+.metrics,
+.performance {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #00000010;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 18px;
+}
+
+.controls label {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 13px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+button {
+    width: 100%;
+    padding: 11px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #4361ee;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #2946cf;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.maze-section {
+    text-align: center;
+    min-width: 0;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-size: 12px;
+}
+
+canvas {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #26344c;
+    background: white;
+}
+
+#status {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #4361ee;
+}
+
+.metrics p {
+    margin: 15px 0;
+    font-size: 13px;
+}
+
+.metrics b {
+    color: #4361ee;
+}
+
+.performance {
+    margin: 0 20px 20px;
+}
+
+@media(max-width: 950px) {
+    .container {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .maze-section {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+}
+
+@media(max-width: 600px) {
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+}
