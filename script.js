@@ -1,476 +1,497 @@
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
 
-let size = 27;
+const sizeInput = document.getElementById("mazeSize");
+const speedInput = document.getElementById("speed");
+const algorithmInput = document.getElementById("algorithm");
+
+const sizeValue = document.getElementById("sizeValue");
+const speedValue = document.getElementById("speedValue");
+const gridLabel = document.getElementById("gridLabel");
+const mazeStatus = document.getElementById("mazeStatus");
+const canvasOverlay = document.getElementById("canvasOverlay");
+
+const visitedCount = document.getElementById("visitedCount");
+const pathLength = document.getElementById("pathLength");
+const executionTime = document.getElementById("executionTime");
+const simulationStatus = document.getElementById("simulationStatus");
+
+const generateBtn = document.getElementById("generateBtn");
+const solveBtn = document.getElementById("solveBtn");
+const clearBtn = document.getElementById("clearBtn");
+const overlayGenerate = document.getElementById("overlayGenerate");
+
 let maze = [];
-let start = [1, 1];
-let goal = [25, 25];
+let visitedCells = new Set();
+let finalPath = [];
 let animationTimer = null;
+let isAnimating = false;
+let mazeReady = false;
 
-const directions = [
-    [0, 1],
-    [1, 0],
-    [0, -1],
-    [-1, 0]
-];
+let mazeSize = Number(sizeInput.value);
+let start = { r: 1, c: 1 };
+let goal = { r: mazeSize - 2, c: mazeSize - 2 };
 
-function createMaze() {
+const COLORS = {
+  wall: "#263550",
+  empty: "#0b1425",
+  visited: "#6557c9",
+  path: "#43c9df",
+  start: "#50e5a2",
+  goal: "#ffbd69",
+  grid: "#142139"
+};
 
-    size = Number(
-        document.getElementById("mazeSize").value
-    );
+function key(r, c) {
+  return `${r},${c}`;
+}
 
-    start = [1, 1];
-    goal = [size - 2, size - 2];
+function getSpeedDelay() {
+  const speed = Number(speedInput.value);
+  return [120, 75, 35, 15, 4][speed - 1];
+}
 
-    maze = Array.from(
-        { length: size },
-        () => Array(size).fill(1)
-    );
+function updateStats(visited = 0, path = 0, time = 0, status = "Idle") {
+  visitedCount.textContent = visited;
+  pathLength.textContent = path;
+  executionTime.innerHTML = `${time} <small>ms</small>`;
+  simulationStatus.textContent = status;
+}
 
-    const stack = [[1, 1]];
+function stopAnimation() {
+  if (animationTimer !== null) {
+    clearTimeout(animationTimer);
+    animationTimer = null;
+  }
+  isAnimating = false;
+  solveBtn.disabled = false;
+  generateBtn.disabled = false;
+}
 
-    maze[1][1] = 0;
+function updateSizeLabels() {
+  const value = Number(sizeInput.value);
+  sizeValue.textContent = `${value} × ${value}`;
+  gridLabel.textContent = `${value} × ${value}`;
+}
 
-    while (stack.length > 0) {
+function updateSpeedLabel() {
+  const names = ["Very slow", "Slow", "Normal", "Fast", "Very fast"];
+  speedValue.textContent = names[Number(speedInput.value) - 1];
+}
 
-        let current = stack[stack.length - 1];
+function makeEmptyMaze(size) {
+  return Array.from({ length: size }, () => Array(size).fill(1));
+}
 
-        let r = current[0];
-        let c = current[1];
+// Generate a maze using randomized depth-first carving.
+function generateMaze() {
+  stopAnimation();
 
-        let options = directions
-            .map(([dr, dc]) => [
-                r + dr * 2,
-                c + dc * 2,
-                dr,
-                dc
-            ])
-            .filter(([nr, nc]) =>
-                nr > 0 &&
-                nc > 0 &&
-                nr < size - 1 &&
-                nc < size - 1 &&
-                maze[nr][nc] === 1
-            );
+  mazeSize = Number(sizeInput.value);
+  start = { r: 1, c: 1 };
+  goal = { r: mazeSize - 2, c: mazeSize - 2 };
 
-        if (options.length === 0) {
-            stack.pop();
-            continue;
-        }
+  maze = makeEmptyMaze(mazeSize);
 
-        let choice = options[
-            Math.floor(Math.random() * options.length)
-        ];
+  const stack = [{ ...start }];
+  maze[start.r][start.c] = 0;
 
-        let [nr, nc, dr, dc] = choice;
+  const directions = [
+    [-2, 0], [2, 0], [0, -2], [0, 2]
+  ];
 
-        maze[r + dr][c + dc] = 0;
-        maze[nr][nc] = 0;
+  while (stack.length > 0) {
+    const current = stack[stack.length - 1];
 
-        stack.push([nr, nc]);
+    const choices = directions
+      .map(([dr, dc]) => ({
+        r: current.r + dr,
+        c: current.c + dc,
+        wallR: current.r + dr / 2,
+        wallC: current.c + dc / 2
+      }))
+      .filter(next =>
+        next.r > 0 &&
+        next.r < mazeSize - 1 &&
+        next.c > 0 &&
+        next.c < mazeSize - 1 &&
+        maze[next.r][next.c] === 1
+      );
+
+    if (choices.length === 0) {
+      stack.pop();
+      continue;
     }
 
-    if (document.getElementById("topology").value === "braid") {
-        for (let r = 1; r < size - 1; r++) {
-            for (let c = 1; c < size - 1; c++) {
-                if (
-                    maze[r][c] === 1 &&
-                    Math.random() < 0.08
-                ) {
-                    let open = directions.filter(([dr, dc]) =>
-                        maze[r + dr]?.[c + dc] === 0
-                    );
+    const next = choices[Math.floor(Math.random() * choices.length)];
 
-                    if (open.length >= 2) {
-                        maze[r][c] = 0;
-                    }
-                }
-            }
-        }
+    maze[next.wallR][next.wallC] = 0;
+    maze[next.r][next.c] = 0;
+    stack.push({ r: next.r, c: next.c });
+  }
+
+  // Open the destination cell.
+  maze[goal.r][goal.c] = 0;
+
+  visitedCells.clear();
+  finalPath = [];
+  mazeReady = true;
+
+  canvasOverlay.classList.add("hidden");
+  updateSizeLabels();
+  drawMaze();
+  updateStats(0, 0, 0, "Ready");
+
+  mazeStatus.textContent = "New maze generated. Choose an algorithm to begin.";
+}
+
+// Draw maze and current visualization state.
+function drawMaze() {
+  if (!maze.length) return;
+
+  const cell = canvas.width / mazeSize;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 0; r < mazeSize; r++) {
+    for (let c = 0; c < mazeSize; c++) {
+      const id = key(r, c);
+
+      let color = maze[r][c] === 1 ? COLORS.wall : COLORS.empty;
+
+      if (visitedCells.has(id)) color = COLORS.visited;
+      if (finalPath.some(p => p.r === r && p.c === c)) color = COLORS.path;
+
+      if (r === start.r && c === start.c) color = COLORS.start;
+      if (r === goal.r && c === goal.c) color = COLORS.goal;
+
+      ctx.fillStyle = color;
+      ctx.fillRect(c * cell, r * cell, cell, cell);
+
+      ctx.strokeStyle = COLORS.grid;
+      ctx.lineWidth = 0.6;
+      ctx.strokeRect(c * cell, r * cell, cell, cell);
+    }
+  }
+
+  // Start and goal markers.
+  ctx.fillStyle = "#06251b";
+  ctx.font = `bold ${Math.max(8, cell * 0.55)}px Manrope`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("S", (start.c + 0.5) * cell, (start.r + 0.5) * cell);
+
+  ctx.fillStyle = "#40260c";
+  ctx.fillText("G", (goal.c + 0.5) * cell, (goal.r + 0.5) * cell);
+}
+
+function getNeighbors(point) {
+  const directions = [
+    [-1, 0], [1, 0], [0, -1], [0, 1]
+  ];
+
+  return directions
+    .map(([dr, dc]) => ({ r: point.r + dr, c: point.c + dc }))
+    .filter(p =>
+      p.r >= 0 &&
+      p.r < mazeSize &&
+      p.c >= 0 &&
+      p.c < mazeSize &&
+      maze[p.r][p.c] === 0
+    );
+}
+
+function reconstructPath(parent, endKey) {
+  const result = [];
+  let current = endKey;
+
+  while (current) {
+    const [r, c] = current.split(",").map(Number);
+    result.push({ r, c });
+    current = parent.get(current);
+  }
+
+  return result.reverse();
+}
+
+// Breadth First Search: explores level by level.
+function bfsSearch() {
+  const queue = [{ ...start }];
+  let head = 0;
+
+  const startKey = key(start.r, start.c);
+  const goalKey = key(goal.r, goal.c);
+
+  const seen = new Set([startKey]);
+  const parent = new Map();
+  const visited = [];
+
+  while (head < queue.length) {
+    const current = queue[head++];
+    const currentKey = key(current.r, current.c);
+    visited.push(current);
+
+    if (currentKey === goalKey) {
+      return { visited, path: reconstructPath(parent, goalKey) };
     }
 
-    maze[goal[0]][goal[1]] = 0;
+    for (const next of getNeighbors(current)) {
+      const nextKey = key(next.r, next.c);
+
+      if (!seen.has(nextKey)) {
+        seen.add(nextKey);
+        parent.set(nextKey, currentKey);
+        queue.push(next);
+      }
+    }
+  }
+
+  return { visited, path: [] };
+}
+
+// Depth First Search: explores one route deeply before backtracking.
+function dfsSearch() {
+  const stack = [{ ...start }];
+
+  const startKey = key(start.r, start.c);
+  const goalKey = key(goal.r, goal.c);
+
+  const seen = new Set([startKey]);
+  const parent = new Map();
+  const visited = [];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    const currentKey = key(current.r, current.c);
+    visited.push(current);
+
+    if (currentKey === goalKey) {
+      return { visited, path: reconstructPath(parent, goalKey) };
+    }
+
+    const neighbors = getNeighbors(current);
+
+    // Shuffle neighbor order for a more natural DFS exploration.
+    for (let i = neighbors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [neighbors[i], neighbors[j]] = [neighbors[j], neighbors[i]];
+    }
+
+    for (const next of neighbors) {
+      const nextKey = key(next.r, next.c);
+
+      if (!seen.has(nextKey)) {
+        seen.add(nextKey);
+        parent.set(nextKey, currentKey);
+        stack.push(next);
+      }
+    }
+  }
+
+  return { visited, path: [] };
+}
+
+// Dijkstra: expands the unvisited cell with the smallest distance.
+function dijkstraSearch() {
+  const startKey = key(start.r, start.c);
+  const goalKey = key(goal.r, goal.c);
+
+  const distance = new Map([[startKey, 0]]);
+  const parent = new Map();
+  const queue = [{ point: { ...start }, cost: 0 }];
+  const seen = new Set();
+  const visited = [];
+
+  while (queue.length > 0) {
+    queue.sort((a, b) => a.cost - b.cost);
+
+    const currentItem = queue.shift();
+    const current = currentItem.point;
+    const currentKey = key(current.r, current.c);
+
+    if (seen.has(currentKey)) continue;
+    seen.add(currentKey);
+    visited.push(current);
+
+    if (currentKey === goalKey) {
+      return { visited, path: reconstructPath(parent, goalKey) };
+    }
+
+    for (const next of getNeighbors(current)) {
+      const nextKey = key(next.r, next.c);
+      const newCost = currentItem.cost + 1;
+
+      if (newCost < (distance.get(nextKey) ?? Infinity)) {
+        distance.set(nextKey, newCost);
+        parent.set(nextKey, currentKey);
+        queue.push({ point: next, cost: newCost });
+      }
+    }
+  }
+
+  return { visited, path: [] };
+}
+
+function runSelectedAlgorithm() {
+  const algorithm = algorithmInput.value;
+
+  if (algorithm === "bfs") return bfsSearch();
+  if (algorithm === "dfs") return dfsSearch();
+  if (algorithm === "dijkstra") return dijkstraSearch();
+
+  return bfsSearch();
+}
+
+function animateResult(result, elapsedTime) {
+  stopAnimation();
+  isAnimating = true;
+  solveBtn.disabled = true;
+  generateBtn.disabled = true;
+
+  visitedCells.clear();
+  finalPath = [];
+
+  const visitList = result.visited;
+  const pathList = result.path;
+  const delay = getSpeedDelay();
+
+  let index = 0;
+
+  updateStats(0, 0, elapsedTime.toFixed(2), "Running");
+  mazeStatus.textContent = "Exploring cells and searching for the destination...";
+
+  function showNextVisit() {
+    if (index < visitList.length) {
+      const point = visitList[index];
+      visitedCells.add(key(point.r, point.c));
+      index++;
+
+      if (index % 2 === 0 || index === visitList.length) {
+        drawMaze();
+        updateStats(index, 0, elapsedTime.toFixed(2), "Running");
+      }
+
+      animationTimer = setTimeout(showNextVisit, delay);
+      return;
+    }
+
+    showPath();
+  }
+
+  let pathIndex = 0;
+
+  function showPath() {
+    if (pathIndex < pathList.length) {
+      finalPath.push(pathList[pathIndex]);
+      pathIndex++;
+
+      drawMaze();
+      updateStats(
+        visitList.length,
+        pathIndex,
+        elapsedTime.toFixed(2),
+        "Drawing path"
+      );
+
+      animationTimer = setTimeout(showPath, Math.max(5, delay));
+      return;
+    }
+
+    stopAnimation();
+
+    if (pathList.length > 0) {
+      updateStats(
+        visitList.length,
+        pathList.length,
+        elapsedTime.toFixed(2),
+        "Completed"
+      );
+      mazeStatus.textContent = "Destination reached! Shortest route displayed.";
+    } else {
+      updateStats(
+        visitList.length,
+        0,
+        elapsedTime.toFixed(2),
+        "No path"
+      );
+      mazeStatus.textContent = "No route to the destination was found.";
+    }
 
     drawMaze();
-    clearMetrics();
+  }
 
-    document.getElementById("status").innerText =
-        "Status: New Maze Generated";
+  showNextVisit();
 }
 
-function drawMaze(visited = new Set(), path = []) {
+function solveMaze() {
+  if (!mazeReady) {
+    mazeStatus.textContent = "Please generate a maze first.";
+    return;
+  }
 
-    const cellSize = Math.floor(
-        Math.min(600, 600) / size
-    );
+  if (isAnimating) return;
 
-    canvas.width = cellSize * size;
-    canvas.height = cellSize * size;
+  stopAnimation();
 
-    const pathSet = new Set(
-        path.map(p => p.join(","))
-    );
+  visitedCells.clear();
+  finalPath = [];
+  drawMaze();
 
-    for (let r = 0; r < size; r++) {
+  const selected = algorithmInput.value;
+  const labels = {
+    bfs: "Breadth First Search",
+    dfs: "Depth First Search",
+    dijkstra: "Dijkstra's Algorithm"
+  };
 
-        for (let c = 0; c < size; c++) {
+  mazeStatus.textContent = `${labels[selected]} is calculating the route...`;
+  updateStats(0, 0, 0, "Calculating");
 
-            let color = maze[r][c] === 1
-                ? "#26344c"
-                : "#ffffff";
+  const startTime = performance.now();
+  const result = runSelectedAlgorithm();
+  const endTime = performance.now();
 
-            if (visited.has(`${r},${c}`)) {
-                color = "#60a5fa";
-            }
+  const elapsed = endTime - startTime;
 
-            if (pathSet.has(`${r},${c}`)) {
-                color = "#f4ca50";
-            }
-
-            if (r === start[0] && c === start[1]) {
-                color = "#12b981";
-            }
-
-            if (r === goal[0] && c === goal[1]) {
-                color = "#ef5364";
-            }
-
-            ctx.fillStyle = color;
-
-            ctx.fillRect(
-                c * cellSize,
-                r * cellSize,
-                cellSize,
-                cellSize
-            );
-
-            ctx.strokeStyle = "#dce2eb";
-
-            ctx.strokeRect(
-                c * cellSize,
-                r * cellSize,
-                cellSize,
-                cellSize
-            );
-        }
-    }
-}
-
-function getNeighbors([r, c]) {
-
-    return directions
-        .map(([dr, dc]) => [r + dr, c + dc])
-        .filter(([nr, nc]) =>
-            nr >= 0 &&
-            nc >= 0 &&
-            nr < size &&
-            nc < size &&
-            maze[nr][nc] === 0
-        );
-}
-
-function solveMaze(algorithm) {
-
-    const startTime = performance.now();
-
-    const startKey = start.join(",");
-    const goalKey = goal.join(",");
-
-    let visited = new Set();
-    let parent = new Map();
-
-    let queue = [start];
-    let distance = new Map([[startKey, 0]]);
-
-    let found = false;
-
-    while (queue.length > 0) {
-
-        let current;
-
-        if (algorithm === "DFS") {
-            current = queue.pop();
-        } else if (algorithm === "Dijkstra" || algorithm === "A*") {
-
-            queue.sort((a, b) => {
-                const score = p => {
-                    const d = distance.get(p.join(",")) || 0;
-
-                    if (algorithm === "Dijkstra") return d;
-
-                    return d +
-                        Math.abs(p[0] - goal[0]) +
-                        Math.abs(p[1] - goal[1]);
-                };
-
-                return score(a) - score(b);
-            });
-
-            current = queue.shift();
-
-        } else {
-            current = queue.shift();
-        }
-
-        const currentKey = current.join(",");
-
-        if (visited.has(currentKey)) continue;
-
-        visited.add(currentKey);
-
-        if (currentKey === goalKey) {
-            found = true;
-            break;
-        }
-
-        for (const neighbor of getNeighbors(current)) {
-
-            const neighborKey = neighbor.join(",");
-
-            if (visited.has(neighborKey)) continue;
-
-            const newDistance =
-                distance.get(currentKey) + 1;
-
-            if (
-                algorithm === "Dijkstra" ||
-                algorithm === "A*"
-            ) {
-                if (
-                    newDistance >=
-                    (distance.get(neighborKey) ?? Infinity)
-                ) continue;
-            } else if (parent.has(neighborKey)) {
-                continue;
-            }
-
-            distance.set(neighborKey, newDistance);
-
-            parent.set(neighborKey, currentKey);
-
-            queue.push(neighbor);
-        }
-    }
-
-    let path = [];
-
-    if (found) {
-
-        let current = goalKey;
-
-        while (current) {
-
-            path.push(
-                current.split(",").map(Number)
-            );
-
-            current = parent.get(current);
-        }
-
-        path.reverse();
-    }
-
-    return {
-        visited,
-        path,
-        time: performance.now() - startTime,
-        found
-    };
-}
-
-function clearMetrics() {
-
-    document.getElementById("metricAlgo").innerText = "BFS";
-    document.getElementById("metricStatus").innerText = "Ready";
-    document.getElementById("metricTime").innerText = "0 ms";
-    document.getElementById("metricVisited").innerText = "0";
-    document.getElementById("metricPath").innerText = "0";
-}
-
-function updateMetrics(algorithm, result) {
-
-    document.getElementById("metricAlgo").innerText = algorithm;
-
-    document.getElementById("metricStatus").innerText =
-        result.found ? "Solved" : "Not Found";
-
-    document.getElementById("metricTime").innerText =
-        result.time.toFixed(2) + " ms";
-
-    document.getElementById("metricVisited").innerText =
-        result.visited.size;
-
-    document.getElementById("metricPath").innerText =
-        result.path.length > 0
-            ? result.path.length - 1
-            : 0;
-}
-
-function animateSolution() {
-
-    if (animationTimer) {
-        clearTimeout(animationTimer);
-        animationTimer = null;
-    }
-
-    const algorithm = document.querySelector(
-        'input[name="algorithm"]:checked'
-    ).value;
-
-    const result = solveMaze(algorithm);
-
-    const visitedArray = [...result.visited];
-
-    const visited = new Set();
-
-    let index = 0;
-
-    const speed = Number(
-        document.getElementById("speed").value
-    );
-
-    const delay = Math.max(5, 100 - speed * 2);
-
-    function animate() {
-
-        for (
-            let i = 0;
-            i < Math.max(1, Math.floor(speed / 4)) &&
-            index < visitedArray.length;
-            i++
-        ) {
-            visited.add(visitedArray[index]);
-            index++;
-        }
-
-        drawMaze(visited);
-
-        if (index < visitedArray.length) {
-
-            animationTimer = setTimeout(animate, delay);
-
-        } else {
-
-            drawMaze(visited, result.path);
-
-            updateMetrics(algorithm, result);
-
-            document.getElementById("status").innerText =
-                result.found
-                    ? "Status: Maze Solved!"
-                    : "Status: No Path Found";
-        }
-    }
-
-    document.getElementById("status").innerText =
-        "Status: Solving...";
-
-    animate();
-}
-
-function runBenchmark() {
-
-    const algorithms = [
-        "BFS",
-        "DFS",
-        "Dijkstra",
-        "A*"
-    ];
-
-    let output = "<table><tr><th>Algorithm</th><th>Time</th><th>Visited</th><th>Path</th></tr>";
-
-    algorithms.forEach(algorithm => {
-
-        const result = solveMaze(algorithm);
-
-        output += `
-            <tr>
-                <td>${algorithm}</td>
-                <td>${result.time.toFixed(2)} ms</td>
-                <td>${result.visited.size}</td>
-                <td>${result.path.length ? result.path.length - 1 : 0}</td>
-            </tr>
-        `;
-    });
-
-    output += "</table>";
-
-    document.getElementById(
-        "benchmarkResults"
-    ).innerHTML = output;
+  animateResult(result, elapsed);
 }
 
 function clearPath() {
-    if (animationTimer) clearTimeout(animationTimer);
-    animationTimer = null;
+  stopAnimation();
+
+  visitedCells.clear();
+  finalPath = [];
+
+  if (mazeReady) {
     drawMaze();
-    clearMetrics();
-    document.getElementById("status").innerText =
-        "Status: Path Cleared";
+    mazeStatus.textContent = "Path cleared. You can run another algorithm.";
+    updateStats(0, 0, 0, "Ready");
+  } else {
+    updateStats(0, 0, 0, "Idle");
+  }
 }
 
-function algorithmRace() {
+// Button events.
+generateBtn.addEventListener("click", generateMaze);
+overlayGenerate.addEventListener("click", generateMaze);
+solveBtn.addEventListener("click", solveMaze);
+clearBtn.addEventListener("click", clearPath);
 
-    const algorithms = ["BFS", "DFS", "Dijkstra", "A*"];
+sizeInput.addEventListener("input", updateSizeLabels);
+speedInput.addEventListener("input", updateSpeedLabel);
 
-    let output = "<h3>4-Way Algorithm Race</h3>";
+algorithmInput.addEventListener("change", () => {
+  const names = {
+    bfs: "Breadth First Search",
+    dfs: "Depth First Search",
+    dijkstra: "Dijkstra's Algorithm"
+  };
 
-    algorithms.forEach(name => {
+  mazeStatus.textContent = `Selected: ${names[algorithmInput.value]}`;
+});
 
-        const result = solveMaze(name);
-
-        output += `
-            <p>
-                <b>${name}</b>:
-                ${result.time.toFixed(2)} ms |
-                ${result.visited.size} nodes visited |
-                ${result.path.length ? result.path.length - 1 : 0} steps
-            </p>
-        `;
-    });
-
-    document.getElementById("benchmarkResults").innerHTML =
-        output;
-}
-
-document.getElementById("generateBtn")
-    .addEventListener("click", createMaze);
-
-document.getElementById("resetBtn")
-    .addEventListener("click", createMaze);
-
-document.getElementById("solveBtn")
-    .addEventListener("click", animateSolution);
-
-document.getElementById("clearBtn")
-    .addEventListener("click", clearPath);
-
-document.getElementById("benchmarkBtn")
-    .addEventListener("click", runBenchmark);
-
-document.getElementById("raceBtn")
-    .addEventListener("click", algorithmRace);
-
-document.querySelectorAll('input[name="algorithm"]')
-    .forEach(input => {
-        input.addEventListener("change", () => {
-
-            const info = {
-                BFS: "BFS uses a Queue (FIFO).",
-                DFS: "DFS uses a Stack (LIFO).",
-                Dijkstra: "Dijkstra uses a Priority Queue.",
-                "A*": "A* uses a Priority Queue and heuristic."
-            };
-
-            document.getElementById(
-                "algorithmInfo"
-            ).innerText = info[input.value];
-
-            document.getElementById(
-                "metricAlgo"
-            ).innerText = input.value;
-        });
-    });
-
-createMaze();
+// Initial page setup.
+updateSizeLabels();
+updateSpeedLabel();
+drawMaze();
+updateStats(0, 0, 0, "Idle");
